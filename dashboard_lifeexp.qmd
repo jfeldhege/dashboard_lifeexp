@@ -1,5 +1,5 @@
 ---
-title: "Dashboard for Life Expectancy"
+title: "Quarto Dashboard: Lebenserwartung"
 author: "Johannes Feldhege"
 format: 
   dashboard: 
