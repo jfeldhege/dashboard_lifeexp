@@ -1,0 +1,161 @@
+---
+title: "Dashboard for Life Expectancy"
+author: "Johannes Feldhege"
+format: 
+  dashboard: 
+    nav-buttons: [github]
+    github: https://github.com/jfeldhege
+theme: [spacelab]
+---
+
+```{r}
+#| label: load libraries
+#| echo: false
+#| warning: false
+#| error: false
+
+library(ggplot2)
+library(dplyr)
+library(ggalt)
+library(knitr)
+library(plotly)
+library(DT)
+
+```
+
+
+```{r}
+#| label: load data
+
+le <- read.csv("le.csv")
+leda <- read.csv("leda.csv")
+lefm <- read.csv("lefm.csv")
+
+```
+
+#  {.sidebar}
+
+Dieses Quarto Dashboard dient zum Testen der Funktionalitäten von [Quarto Dashboards](https://quarto.org/docs/dashboards/), welche mit der Version 1.4 von Quarto eingeführt werden sollen. 
+
+Die Daten wurden im Rahmen von [TidyTuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-12-05) am 05.12.2023 veröffentlicht.
+
+
+# Deutschland
+```{r}
+#| echo: false
+
+de_le <- le %>% 
+  filter(Entity == "Germany") %>% 
+  arrange(Year)
+
+de_leda <- leda %>% 
+  filter(Entity == "Germany") %>% 
+  arrange(Year)
+
+de_lefm <- lefm %>% 
+  filter(Entity == "Germany") %>% 
+  arrange(Year)
+```
+
+
+
+## Row
+
+```{r}
+#| content: valuebox
+#| title: "Lebenserwartung in Deutschland 2021"
+
+list(
+  icon = "file-medical",
+  color = "primary",
+  value = round(de_le$LifeExpectancy[de_le$Year == max(de_le$Year)], 2)
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Differenz in Lebenserwartung Weiblich zu Männlich, 2021"
+
+list(
+  icon = "gender-female",
+  color = "secondary",
+  value = round(de_lefm$LifeExpectancyDiffFM[de_lefm$Year == max(de_lefm$Year)], 2)
+)
+```
+
+
+## Row
+
+```{r}
+ggplot(de_le, aes(x = Year, y = LifeExpectancy)) +
+  geom_point() + 
+  labs(x = "Jahr", "Lebenserwartung") +
+  theme_minimal(base_size = 14)
+```
+
+
+
+```{r}
+de_leda %>% 
+  filter(Year >= 1950) %>% 
+  tidyr::pivot_longer(cols = starts_with("Life"), names_to = "Age") %>% 
+  ggplot(aes(x = Year, y = value, color = Age)) +
+  geom_point() +
+  theme_minimal(base_size = 14)
+```
+
+
+# Kontinente
+
+```{r}
+#| echo: false
+
+co <- c("Europe", "Northern America", "Latin America and the Caribbean", 
+        "Africa", "Oceania", "Asia")
+
+co_le <- le %>% 
+  filter(Entity %in% co) %>% 
+  filter(Year >= 1950) %>% 
+  mutate(Entity = ifelse(Entity == "Latin America and the Caribbean", "Latin America/Caribbean", Entity))
+```
+
+
+## Row {height=60%}
+
+```{r}
+#| title: Graphical display of life expectancy by continent 1950 - 2021
+p <- co_le %>% 
+  ggplot(aes(x = Year, y = LifeExpectancy, color = Entity)) + 
+  geom_point(aes(frame = Year)) +
+  labs(x = "Life Expectancy", y = "Continent") +
+  theme_minimal()
+
+ggplotly(p, tooltip = c("color", "x", "y")) %>%
+  animation_opts(frame = 300, easing = "linear", redraw = FALSE)
+```
+
+```{r}
+#| title: Change in life expectancy between 1950 and 2021
+co_le2 <- co_le %>% 
+  filter(Year %in% c(1950, 2021)) %>% 
+  mutate(Year = factor(Year))
+
+ggplot(co_le2, aes(x = LifeExpectancy, y = reorder(Entity, LifeExpectancy))) +
+  geom_line() +
+  geom_point(aes(color = Year), size = 3) +
+  theme(legend.position = "bottom") +
+  labs(x = "Life Expectancy", y = "Continent") +
+  theme_minimal(base_size = 14)
+```
+
+
+## Row {height=40%}
+
+```{r}
+#| title: Table of life expectancy by continent 1950 - 2021
+
+co_le %>% 
+  select("Continent" = Entity, Year, "Life Expectancy" = LifeExpectancy) %>% 
+  datatable(fillContainer = FALSE, options = list(pageLength = 10))
+```
+
