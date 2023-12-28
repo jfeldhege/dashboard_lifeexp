@@ -6,8 +6,6 @@ format:
     nav-buttons: [github]
     github: https://github.com/jfeldhege
 theme: [spacelab]
-  site-url: https://johannesfeldhege.de
-  repo-url: https://github.com/jfeldhege/jfeldhege.github.io
 ---
 
 ```{r}
