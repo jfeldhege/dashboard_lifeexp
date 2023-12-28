@@ -87,9 +87,10 @@ list(
 ## Row
 
 ```{r}
+#| title: Lebenserwartung in Deutschland über die Zeit
 ggplot(de_le, aes(x = Year, y = LifeExpectancy)) +
   geom_point() + 
-  labs(x = "Jahr", "Lebenserwartung") +
+  labs(x = "Jahr", y = "Lebenserwartung") +
   theme_minimal(base_size = 14)
 ```
 
@@ -101,6 +102,7 @@ de_leda %>%
   tidyr::pivot_longer(cols = starts_with("Life"), names_to = "Age") %>% 
   ggplot(aes(x = Year, y = value, color = Age)) +
   geom_point() +
+  labs(x = "Jahr", y = "Lebenserwartung", color = "Lebenserwartung in diesem Alter") +
   theme_minimal(base_size = 14)
 ```
 
@@ -123,11 +125,11 @@ co_le <- le %>%
 ## Row {height=60%}
 
 ```{r}
-#| title: Graphical display of life expectancy by continent 1950 - 2021
+#| title: Graph der Lebenserwartung pro Kontinent 1950 - 2021
 p <- co_le %>% 
   ggplot(aes(x = Year, y = LifeExpectancy, color = Entity)) + 
   geom_point(aes(frame = Year)) +
-  labs(x = "Life Expectancy", y = "Continent") +
+  labs(x = "Lebenserwartung", y = "Kontinent") +
   theme_minimal()
 
 ggplotly(p, tooltip = c("color", "x", "y")) %>%
@@ -135,7 +137,7 @@ ggplotly(p, tooltip = c("color", "x", "y")) %>%
 ```
 
 ```{r}
-#| title: Change in life expectancy between 1950 and 2021
+#| title: Veränderung der Lebenserwartung zwischen 1950 und 2021
 co_le2 <- co_le %>% 
   filter(Year %in% c(1950, 2021)) %>% 
   mutate(Year = factor(Year))
@@ -144,7 +146,7 @@ ggplot(co_le2, aes(x = LifeExpectancy, y = reorder(Entity, LifeExpectancy))) +
   geom_line() +
   geom_point(aes(color = Year), size = 3) +
   theme(legend.position = "bottom") +
-  labs(x = "Life Expectancy", y = "Continent") +
+  labs(x = "Lebenserwartung", y = "Kontinent") +
   theme_minimal(base_size = 14)
 ```
 
@@ -152,7 +154,7 @@ ggplot(co_le2, aes(x = LifeExpectancy, y = reorder(Entity, LifeExpectancy))) +
 ## Row {height=40%}
 
 ```{r}
-#| title: Table of life expectancy by continent 1950 - 2021
+#| title: Tabelle der Lebenserwartung pro Kontinent 1950 - 2021
 
 co_le %>% 
   select("Continent" = Entity, Year, "Life Expectancy" = LifeExpectancy) %>% 
