@@ -97,6 +97,7 @@ ggplot(de_le, aes(x = Year, y = LifeExpectancy)) +
 
 
 ```{r}
+#| title: Lebenserwartung in Deutschland in unterschiedlichen Altern
 de_leda %>% 
   filter(Year >= 1950) %>% 
   tidyr::pivot_longer(cols = starts_with("Life"), names_to = "Age") %>% 
@@ -125,7 +126,7 @@ co_le <- le %>%
 ## Row {height=60%}
 
 ```{r}
-#| title: Graph der Lebenserwartung pro Kontinent 1950 - 2021
+#| title: Lebenserwartung pro Kontinent 1950 - 2021
 p <- co_le %>% 
   ggplot(aes(x = Year, y = LifeExpectancy, color = Entity)) + 
   geom_point(aes(frame = Year)) +
@@ -154,10 +155,78 @@ ggplot(co_le2, aes(x = LifeExpectancy, y = reorder(Entity, LifeExpectancy))) +
 ## Row {height=40%}
 
 ```{r}
-#| title: Tabelle der Lebenserwartung pro Kontinent 1950 - 2021
+#| title: Lebenserwartung pro Kontinent 1950 - 2021
 
 co_le %>% 
+  mutate(LifeExpectancy = round(LifeExpectancy, 1)) %>% 
   select("Continent" = Entity, Year, "Life Expectancy" = LifeExpectancy) %>% 
   datatable(fillContainer = FALSE, options = list(pageLength = 10))
 ```
 
+# Welt {orientation="columns"}
+
+## Column {width=70%}
+
+```{r}
+#| title: Lebenserwartung 2021
+
+country_df <- map_data("world")
+
+le2 <- le %>% 
+  filter(Year == "2021") %>% 
+  mutate(Entity = case_when(
+                            Entity == "Democratic Republic of Congo" ~ "Democratic Republic of the Congo",
+                            Entity == "Congo" ~ "Republic of Congo",
+                            Entity == "Cote d'Ivoire" ~ "Ivory Coast",
+                            Entity == "East Timor" ~ "Timor-Leste",
+                            .default = Entity),
+         LifeExpectancy = round(LifeExpectancy, 1))
+
+
+country_df <- country_df %>% 
+  mutate(region = case_when(region == "USA" ~ "United States",
+                            region == "UK" ~ "United Kingdom",
+                            region == "Czech Republic" ~ "Czechia",
+                            region == "Cote d'Ivoire" ~ "Ivory Coast",
+                            region == "Trinidad" ~ "Trinidad and Tobago",
+                            region == "Antigua" ~ "Antigua and Barbuda",
+                            region == "Swaziland" ~ "Eswatini",
+                            subregion == "Hong Kong" ~ "Hong Kong",
+                            subregion == "Macao" ~ "Macao",
+                            .default = region))
+
+
+# join data
+
+world <- left_join(country_df %>% rename(Country = region), 
+                   le2 %>% rename(Country = Entity),
+                   by = "Country")
+
+#plot
+
+p <- ggplot(world, aes(long, lat, group = group)) +
+  
+  geom_polygon(aes(label = Country, fill = LifeExpectancy),
+
+               colour = alpha("white", 1/2), size = 0.05)  +
+  
+  ggtitle("Lebenserwartung 2021") +
+  
+  scale_fill_viridis_c(option = "plasma") +
+  
+  theme_void()
+
+ggplotly(p)
+```
+
+## Column {width=30%}
+
+```{r}
+#| title: Tabelle Lebenserwartung 2021
+
+le2  %>% 
+  arrange(desc(LifeExpectancy)) %>% 
+  select(Country = Entity, "Life Expectancy" = LifeExpectancy) %>% 
+  filter(Country %in% country_df$region) %>% 
+  datatable(fillContainer = FALSE, options = list(pageLength = 10))
+```
