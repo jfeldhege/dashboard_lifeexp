@@ -1,10 +1,10 @@
 ---
-title: "Quarto Dashboard: Lebenserwartung"
+title: "Demo Dashboard: Lebenserwartung"
 author: "Johannes Feldhege"
 format: 
   dashboard: 
     nav-buttons: [github]
-    github: https://github.com/jfeldhege
+    github: https://github.com/jfeldhege/dashboard_lifeexp
 theme: [spacelab]
 ---
 
@@ -26,10 +26,15 @@ library(DT)
 
 ```{r}
 #| label: load data
+#| echo: false
+#| warning: false
+#| error: false
 
-le <- read.csv("le.csv")
-leda <- read.csv("leda.csv")
-lefm <- read.csv("lefm.csv")
+tuesdata <- tidytuesdayR::tt_load('2023-12-05')
+
+le <- tuesdata$life_expectancy
+leda <- tuesdata$life_expectancy_different_ages
+lefm <- tuesdata$life_expectancy_female_male
 
 ```
 
@@ -97,7 +102,7 @@ ggplot(de_le, aes(x = Year, y = LifeExpectancy)) +
 
 
 ```{r}
-#| title: Lebenserwartung in Deutschland in unterschiedlichen Altern
+#| title: Lebenserwartung in Deutschland in unterschiedlichen Altersgruppen
 de_leda %>% 
   filter(Year >= 1950) %>% 
   tidyr::pivot_longer(cols = starts_with("Life"), names_to = "Age") %>% 
@@ -209,8 +214,6 @@ p <- ggplot(world, aes(long, lat, group = group)) +
   geom_polygon(aes(label = Country, fill = LifeExpectancy),
 
                colour = alpha("white", 1/2), size = 0.05)  +
-  
-  ggtitle("Lebenserwartung 2021") +
   
   scale_fill_viridis_c(option = "plasma") +
   
