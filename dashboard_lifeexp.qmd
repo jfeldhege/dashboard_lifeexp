@@ -29,8 +29,16 @@ library(DT)
 #| echo: false
 #| warning: false
 #| error: false
+#| message: false
 
-tuesdata <- tidytuesdayR::tt_load('2023-12-05')
+quiet <- function(x) { 
+  sink(tempfile()) 
+  on.exit(sink()) 
+  invisible(force(x)) 
+} 
+
+
+quiet(tuesdata <- tidytuesdayR::tt_load('2023-12-05'))
 
 le <- tuesdata$life_expectancy
 leda <- tuesdata$life_expectancy_different_ages
